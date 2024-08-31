@@ -14,7 +14,11 @@ puppeteer.use(
 const args = process.argv;
 
 let lowerLimit = args[2] || 1;
+lowerLimit = parseInt(lowerLimit);
+
 let upperLimit = args[3] || 1000;
+upperLimit = parseInt(upperLimit);
+
 let district = args[4] || 'Hyderabad';
 
 let DBhash = crypto.randomBytes(4).toString('hex');
@@ -65,6 +69,10 @@ db.run(`CREATE TABLE IF NOT EXISTS firms (
 
     // ---> this is where loop starts
 
+    for(let j=2024; j>=upperLimit ; j--){
+    // reg no
+    for(let i=1; i<=lowerLimit ; i++){
+
     // wait for page to complete loading
     await page.waitForSelector('#accordion > div:nth-child(5) > div.panel-heading > h4 > a');
     // wait for 2 more seconds
@@ -103,8 +111,8 @@ db.run(`CREATE TABLE IF NOT EXISTS firms (
     await newPage.waitForSelector('#firmRegistrationNo'); // Replace with your input field's selector
 
     // Fill in the input box
-    await newPage.type('#firmRegistrationNo', `${lowerLimit}`); // Replace with your input field's selector and text
-    await newPage.type('#regYear', `${upperLimit}`);
+    await newPage.type('#firmRegistrationNo', `${i}`); // Replace with your input field's selector and text
+    await newPage.type('#regYear', `${j}`);
     await newPage.select('#registrationDistrictName', district);
     
     
@@ -228,9 +236,9 @@ db.run(`CREATE TABLE IF NOT EXISTS firms (
 
     // Close the new tab
     await newPage.close();
-
     // ---> this is where loop ends
-
+    }
+    }
     // Close the browser
     await browser.close();
 })();
