@@ -8,7 +8,7 @@
             "type": "node",
             "request": "launch",
             "name": "Launch Program",
-            "args": [ "3", "2024", "KARIMNAGAR"],
+            "args": [ "1", "2024", "KARIMNAGAR"],
             "skipFiles": [
                 "<node_internals>/**"
             ],
