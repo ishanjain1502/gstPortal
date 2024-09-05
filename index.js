@@ -2,6 +2,7 @@ const fs = require('fs');
 const puppeteer = require('puppeteer-extra');
 const crypto = require('crypto');
 const sqlite3 = require('sqlite3').verbose();
+const xlsx = require('xlsx');
 
 const { DEFAULT_INTERCEPT_RESOLUTION_PRIORITY } = require('puppeteer')
 const AdblockerPlugin = require('puppeteer-extra-plugin-adblocker')
@@ -240,13 +241,22 @@ db.run(`CREATE TABLE IF NOT EXISTS firms (
                     data.push(object);
                     return data;
                 })
-                
+
+                let partners = data[0].partners;
+                partners.forEach(partner => {
+                    partner.address = partner.address.replace(/\/\s*/g, ', ');
+                    partner.address = partner.address.replace(/\n/g, '');
+                  });
+                  
+                  // Step 3: Convert the object back to a JSON string (if needed)
+                  let formattedJsonString = JSON.stringify(partners, null, 2);
+                  formattedJsonString = formattedJsonString.replace(/\n/g, '');
                 // inster data[0] into the table
                 db.run(`INSERT INTO firms (firstName, surName, gender, doorNo, city, street, state, country, phoneNumber, emailId, mobileNumber, registrationNo, 
                     registeredDistrict, registeredName, registeredYear, partners) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, 
                     [data[0].firstName, data[0].surName, data[0].gender, data[0].doorNo, data[0].city, 
                     data[0].street, data[0].state, data[0].country, data[0].phoneNumber, data[0].emailId, data[0].mobileNumber, data[0].registrationNo, 
-                    data[0].registeredDistrict, data[0].registeredName, data[0].registeredYear, JSON.stringify(data[0].partners)], 
+                    data[0].registeredDistrict, data[0].registeredName, data[0].registeredYear, formattedJsonString], 
                     function(err) {
                         if (err) {
                             console.error(err.message);
@@ -283,6 +293,14 @@ db.run(`CREATE TABLE IF NOT EXISTS firms (
         let hash = crypto.randomBytes(6).toString('hex');
         // Write the JSON data to a file
         fs.writeFileSync(`./jsonData/${DBhash}Example.json`, JSON.stringify(json, null, 2));
+
+
+        // write it down in a excel file using xlsx
+        const excelData = xlsx.utils.json_to_sheet(jsonData);
+        const excelWorkbook = xlsx.utils.book_new();
+        xlsx.utils.book_append_sheet(excelWorkbook, excelData, 'Sheet1');
+        xlsx.writeFile(excelWorkbook, `./excelData/${DBhash}Example.xlsx`);
+
     
         console.log('Data has been written to gst_data.json');
     });
